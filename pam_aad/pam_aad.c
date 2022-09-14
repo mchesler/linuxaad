@@ -214,7 +214,7 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
     return PAM_AUTH_ERR;
   }
   snprintf(pam_message, 512, "%s\nAnd press Enter to continue....", json_string_value(json_object_get(json_root, "message")));
-  if (params->debug) {
+  if (params.debug) {
     log_message(LOG_INFO, pamh, "debug: pam_message is \"%s\"", pam_message);
   }
   pam_password = request_pass(pamh, params, pam_message);
@@ -224,7 +224,7 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
   snprintf(token_postfield, 512, "grant_type=urn:ietf:params:oauth:grant-type:device_code&client_id=%s&device_code=%s", client_id, json_string_value(json_object_get(json_root, "device_code")));
   json_decref(json_root);
 
-  if (params->debug) {
+  if (params.debug) {
     log_message(LOG_INFO, pamh, "debug: token_url: \"%s\"", token_url);
     log_message(LOG_INFO, pamh, "debug: token_postfield: \"%s\"", token_postfield);
   }
@@ -268,7 +268,7 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
   json_decref(json_root);
 
   // all is good; allow user to continue
-  if (params->debug) {
+  if (params.debug) {
     log_message(LOG_INFO, pamh, "debug: Successful auth for \"%s\"", username);
   }
   return PAM_SUCCESS;
