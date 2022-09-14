@@ -60,59 +60,47 @@ static void log_message(int priority, pam_handle_t *pamh,
   }
 }
 
-static int converse(pam_handle_t *pamh, int nargs, const struct pam_message **message, struct pam_response **response) {
+static int prompt_user(pam_handle_t *pamh, const char *prompt) {
   struct pam_conv *conv;
-  int retval = pam_get_item(pamh, PAM_CONV, (void *)&conv);
+  const struct pam_message msg = { .msg_style = PAM_PROMPT_ECHO_OFF,
+                                   .msg       = prompt};
+  const struct pam_message *msgs = &msg;
+  struct pam_response *resp = NULL;
+  int retval;
+
+  retval = pam_get_item(pamh, PAM_CONV, (void *)&conv);
   if (retval != PAM_SUCCESS) {
     return retval;
   }
-  return conv->conv(nargs, message, response, conv->appdata_ptr);
+
+  retval = conv->conv(1, &msgs, &resp, conv->appdata_ptr);
+  if (resp != NULL) {
+    if (retval == PAM_SUCCESS && resp && resp->resp) {
+      free(resp->resp);
+    }
+    free(resp);
+  }
+
+  return retval;
 }
 
 static int parse_args(pam_handle_t *pamh, int argc, const char **argv,
                       Params *params) {
   params->debug = 0;
+  params->request_debug = 0;
   params->echocode = PAM_PROMPT_ECHO_OFF;
   for (int i = 0; i < argc; ++i) {
     if (!strcmp(argv[i], "debug")) {
       params->debug = 1;
-    } else if (!strcmp(argv[i], "echo-verification-code") ||
-               !strcmp(argv[i], "echo_verification_code")) {
-      params->echocode = PAM_PROMPT_ECHO_ON;
+    } else if (!strcmp(argv[i], "request_debug") ||
+               !strcmp(argv[i], "request-debug")) {
+      params->request_debug = 1;
     } else {
       log_message(LOG_ERR, pamh, "Unrecognized option \"%s\"", argv[i]);
       return -1;
     }
   }
   return 0;
-}
-
-static char *request_pass(pam_handle_t *pamh, const Params *params, const char *prompt) {
-  const struct pam_message msg = { .msg_style = params->echocode,
-                                   .msg       = prompt};
-  const struct pam_message *msgs = &msg;
-  struct pam_response *resp = NULL;
-  int retval = converse(pamh, 1, &msgs, &resp);
-  char *ret = NULL;
-  if (retval != PAM_SUCCESS || resp == NULL || resp->resp == NULL ||
-      *resp->resp == '\000') {
-    log_message(LOG_ERR, pamh, "Did not receive verification code from user");
-    if (retval == PAM_SUCCESS && resp && resp->resp) {
-      ret = resp->resp;
-    }
-  } else {
-    ret = resp->resp;
-  }
-
-  // Deallocated temporary storage
-  if (resp) {
-    if (!ret) {
-      free(resp->resp);
-    }
-    free(resp);
-  }
-
-  return ret;
 }
 
 static const char *get_user_name(pam_handle_t *pamh, const Params *params) {
@@ -185,7 +173,6 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
   char device_url[512], device_postfield[512];
   char token_url[512], token_postfield[512];
   char graph_url[512], auth_header[4096];
-  char *pam_password = NULL;
   char pam_message[512];
   json_t *json_root, *token_object;
   json_error_t json_error;
@@ -216,7 +203,7 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
     return PAM_AUTH_ERR;
   }
   snprintf(pam_message, 512, "%s\nAnd press Enter to continue....", json_string_value(json_object_get(json_root, "message")));
-  pam_password = request_pass(pamh, &params, pam_message);
+  prompt_user(pamh, pam_message);
   if (params.debug) {
     log_message(LOG_INFO, pamh, "debug: pam_message is \"%s\"", pam_message);
     log_message(LOG_INFO, pamh, "debug: pam_password is \"%s\"", pam_password);
