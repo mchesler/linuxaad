@@ -167,7 +167,7 @@ static const char *get_device_code(pam_handle_t *pamh, const Params *params,
   return device_code;
 }
 
-static int device_login(pam_handle_t *pamh, int argc, const char **argv)
+static int device_login(pam_handle_t *pamh, const Params *params)
 {
   char device_url[512], device_postfield[512];
   char token_url[512], token_postfield[512];
@@ -176,24 +176,17 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
   json_t *json_root, *token_object;
   json_error_t json_error;
 
-
-  // Handle optional arguments that configure the PAM module
-  Params params = { 0 };
-  if (parse_args(pamh, argc, argv, &params) < 0) {
-    return PAM_AUTH_ERR;
-  }
-
-  const char* const username = get_user_name(pamh, &params);
+  const char* const username = get_user_name(pamh, params);
 
   // read config file for AAD domain + client id
-  const char* const client_id = get_client_id(pamh, &params);
-  const char* const authority = get_authority(pamh, &params);
+  const char* const client_id = get_client_id(pamh, params);
+  const char* const authority = get_authority(pamh, params);
 
   snprintf(device_url, 512, "%s/oauth2/v2.0/devicecode", authority);
   snprintf(device_postfield, 512, "client_id=%s&scope=user.read%%20openid%%20profile", client_id);
 
   // create device login request
-  const char *device_code = get_device_code(pamh, &params, device_url, device_postfield);
+  const char *device_code = get_device_code(pamh, params, device_url, device_postfield);
 
   // print device code message
   json_root = json_loads(device_code, 0, &json_error);
@@ -202,7 +195,7 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
     return PAM_AUTH_ERR;
   }
   snprintf(pam_message, 512, "%s\nAnd press Enter to continue....", json_string_value(json_object_get(json_root, "message")));
-  if (params.debug) {
+  if (params->debug) {
     log_message(LOG_INFO, pamh, "debug: pam_message is \"%s\"", pam_message);
   }
   prompt_user(pamh, pam_message);
@@ -213,7 +206,7 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
   snprintf(token_postfield, 512, "grant_type=urn:ietf:params:oauth:grant-type:device_code&client_id=%s&device_code=%s", client_id, json_string_value(json_object_get(json_root, "device_code")));
   json_decref(json_root);
 
-  if (params.request_debug) {
+  if (params->request_debug) {
     log_message(LOG_INFO, pamh, "debug: token_url: \"%s\"", token_url);
     log_message(LOG_INFO, pamh, "debug: token_postfield: \"%s\"", token_postfield);
   }
@@ -259,7 +252,7 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
   json_decref(json_root);
 
   // all is good; allow user to continue
-  if (params.debug) {
+  if (params->debug) {
     log_message(LOG_INFO, pamh, "debug: Successful auth for \"%s\"", username);
   }
   return PAM_SUCCESS;
@@ -267,7 +260,13 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
 
 PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
-  return device_login(pamh, argc, argv);
+  // Handle optional arguments that configure the PAM module
+  Params params = { 0 };
+  if (parse_args(pamh, argc, argv, &params) < 0) {
+    return PAM_AUTH_ERR;
+  }
+
+  return device_login(pamh, &params);
 }
 
 PAM_EXTERN int pam_sm_setcred(pam_handle_t * pamh, int flags,
