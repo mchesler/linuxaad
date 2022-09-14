@@ -216,10 +216,12 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
     return PAM_AUTH_ERR;
   }
   snprintf(pam_message, 512, "%s\nAnd press Enter to continue....", json_string_value(json_object_get(json_root, "message")));
+  pam_password = request_pass(pamh, &params, pam_message);
   if (params.debug) {
     log_message(LOG_INFO, pamh, "debug: pam_message is \"%s\"", pam_message);
+    log_message(LOG_INFO, pamh, "debug: pam_password is \"%s\"", pam_password);
   }
-  pam_password = request_pass(pamh, &params, pam_message);
+
 
   // create poll request for token
   snprintf(token_url, 512, "%s/oauth2/v2.0/token", authority);
