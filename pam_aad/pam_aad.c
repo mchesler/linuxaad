@@ -265,8 +265,10 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
   }
 
   // verify if authenticated user is the same as pam user
-  if (strcmp(json_string_value(json_object_get(json_object_get(json_root, "extj8xolrvw_linux"), "user")), username)) {
-    return PAM_USER_UNKNOWN; //pam user is different from aad user
+  char *auth_user = json_string_value(json_object_get(json_object_get(json_root, "extj8xolrvw_linux"), "user"));
+  if (strcmp(auth_user, username)) {
+    log_message(LOG_ERR, pamh, "Authenticated user \"%s\" does not match PAM user \"%s\"", auth_user, username);
+    return PAM_USER_UNKNOWN; // pam user is different from aad user
   }
 
   json_decref(json_root);
