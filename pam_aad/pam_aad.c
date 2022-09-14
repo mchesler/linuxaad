@@ -1,4 +1,6 @@
-
+#define __USE_BSD
+#define _BSD_SOURCE
+#define _DEFAULT_SOURCE
 #define PAM_SM_AUTH
 #include "nss_http.h"
 #include <security/pam_modules.h>
@@ -58,7 +60,7 @@ static void log_message(int priority, pam_handle_t *pamh,
   }
 }
 
-static int converse(pam_handle_t *pamh, int nargs, PAM_CONST struct pam_message **message, struct pam_response **response) {
+static int converse(pam_handle_t *pamh, int nargs, const struct pam_message **message, struct pam_response **response) {
   struct pam_conv *conv;
   int retval = pam_get_item(pamh, PAM_CONV, (void *)&conv);
   if (retval != PAM_SUCCESS) {
@@ -85,14 +87,14 @@ static int parse_args(pam_handle_t *pamh, int argc, const char **argv,
   return 0;
 }
 
-static char *request_pass(pam_handle_t *pamh, const Params *params, PAM_CONST char *prompt) {
-  PAM_CONST struct pam_message msg = { .mesg_style = params->echocode,
-                                       .msg        = prompt};
-  PAM_CONST struct pam_message *msgs = &msg;
+static char *request_pass(pam_handle_t *pamh, const Params *params, const char *prompt) {
+  const struct pam_message msg = { .msg_style = params->echocode,
+                                   .msg       = prompt};
+  const struct pam_message *msgs = &msg;
   struct pam_response *resp = NULL;
   int retval = converse(pamh, 1, &msgs, &resp);
   char *ret = NULL;
-  if (retval != PAM_SUCCESS || resp == NULL, || resp->resp == NULL ||
+  if (retval != PAM_SUCCESS || resp == NULL || resp->resp == NULL ||
       *resp->resp == '\000') {
     log_message(LOG_ERR, pamh, "Did not receive verification code from user");
     if (retval == PAM_SUCCESS && resp && resp->resp) {
@@ -217,7 +219,7 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
   if (params.debug) {
     log_message(LOG_INFO, pamh, "debug: pam_message is \"%s\"", pam_message);
   }
-  pam_password = request_pass(pamh, params, pam_message);
+  pam_password = request_pass(pamh, &params, pam_message);
 
   // create poll request for token
   snprintf(token_url, 512, "%s/oauth2/v2.0/token", authority);
