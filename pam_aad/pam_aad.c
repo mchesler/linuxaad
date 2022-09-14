@@ -12,8 +12,8 @@
 #define MODULE_NAME "pam_aad"
 
 typedef struct Params {
-  int        echocode;
-  int        debug;
+  int debug;
+  int request_debug;
 } Params;
 
 static void log_message(int priority, pam_handle_t *pamh,
@@ -88,7 +88,6 @@ static int parse_args(pam_handle_t *pamh, int argc, const char **argv,
                       Params *params) {
   params->debug = 0;
   params->request_debug = 0;
-  params->echocode = PAM_PROMPT_ECHO_OFF;
   for (int i = 0; i < argc; ++i) {
     if (!strcmp(argv[i], "debug")) {
       params->debug = 1;
@@ -128,7 +127,7 @@ static const char *get_client_id(pam_handle_t *pamh, const Params *params) {
     log_message(LOG_ERR, pamh, "Failed to retrieve client_id from config");
     return NULL;
   }
-  if (params->debug) {
+  if (params->request_debug) {
     log_message(LOG_INFO, pamh, "debug: client_id for AAD Auth is \"%s\"", client_id);
   }
   return client_id;
@@ -143,7 +142,7 @@ static const char *get_authority(pam_handle_t *pamh, const Params *params) {
     log_message(LOG_ERR, pamh, "Failed to retrieve authority from config");
     return NULL;
   }
-  if (params->debug) {
+  if (params->request_debug) {
     log_message(LOG_INFO, pamh, "debug: authority for AAD Auth is \"%s\"", authority);
   }
   return authority;
@@ -156,13 +155,13 @@ static const char *get_device_code(pam_handle_t *pamh, const Params *params,
   device_code = nss_http_token_request(device_url, device_postfield);
   if (!device_code || !*device_code) {
     log_message(LOG_ERR, pamh, "Failed to retrieve device code");
-    if (params->debug) {
+    if (params->request_debug) {
       log_message(LOG_INFO, pamh, "debug: device_url: \"%s\"", device_url);
       log_message(LOG_INFO, pamh, "debug: device_postfield: \"%s\"", device_postfield);
     }
     return NULL;
   }
-  if (params->debug) {
+  if (params->request_debug) {
     log_message(LOG_INFO, pamh, "debug: device code for AAD Auth is \"%s\"", device_code);
   }
   return device_code;
@@ -203,11 +202,10 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
     return PAM_AUTH_ERR;
   }
   snprintf(pam_message, 512, "%s\nAnd press Enter to continue....", json_string_value(json_object_get(json_root, "message")));
-  prompt_user(pamh, pam_message);
   if (params.debug) {
     log_message(LOG_INFO, pamh, "debug: pam_message is \"%s\"", pam_message);
-    log_message(LOG_INFO, pamh, "debug: pam_password is \"%s\"", pam_password);
   }
+  prompt_user(pamh, pam_message);
 
 
   // create poll request for token
@@ -215,7 +213,7 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
   snprintf(token_postfield, 512, "grant_type=urn:ietf:params:oauth:grant-type:device_code&client_id=%s&device_code=%s", client_id, json_string_value(json_object_get(json_root, "device_code")));
   json_decref(json_root);
 
-  if (params.debug) {
+  if (params.request_debug) {
     log_message(LOG_INFO, pamh, "debug: token_url: \"%s\"", token_url);
     log_message(LOG_INFO, pamh, "debug: token_postfield: \"%s\"", token_postfield);
   }
