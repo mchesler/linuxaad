@@ -167,7 +167,7 @@ static const char *get_device_code(pam_handle_t *pamh, const Params *params,
   return device_code;
 }
 
-static int device_login(pam_handle_t *pamh, const Params *params)
+static int device_login(const char *username, pam_handle_t *pamh, const Params *params)
 {
   char device_url[512], device_postfield[512];
   char token_url[512], token_postfield[512];
@@ -175,8 +175,6 @@ static int device_login(pam_handle_t *pamh, const Params *params)
   char pam_message[512];
   json_t *json_root, *token_object;
   json_error_t json_error;
-
-  const char* const username = get_user_name(pamh, params);
 
   // read config file for AAD domain + client id
   const char* const client_id = get_client_id(pamh, params);
@@ -266,7 +264,9 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, cons
     return PAM_AUTH_ERR;
   }
 
-  return device_login(pamh, &params);
+  const char *username = get_user_name(pamh, &params);
+
+  return device_login(username, pamh, &params);
 }
 
 PAM_EXTERN int pam_sm_setcred(pam_handle_t * pamh, int flags,
