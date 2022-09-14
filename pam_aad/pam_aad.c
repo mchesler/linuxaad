@@ -112,7 +112,7 @@ static const char *get_user_name(pam_handle_t *pamh, const Params *params) {
                 " when checking AAD device code");
     return NULL;
   }
-  if (params->debug) {
+  if (params && params->debug) {
     log_message(LOG_INFO, pamh, "debug: start of AAD Auth for \"%s\"", username);
   }
   return username;
@@ -127,7 +127,7 @@ static const char *get_client_id(pam_handle_t *pamh, const Params *params) {
     log_message(LOG_ERR, pamh, "Failed to retrieve client_id from config");
     return NULL;
   }
-  if (params->request_debug) {
+  if (params && params->request_debug) {
     log_message(LOG_INFO, pamh, "debug: client_id for AAD Auth is \"%s\"", client_id);
   }
   return client_id;
@@ -142,7 +142,7 @@ static const char *get_authority(pam_handle_t *pamh, const Params *params) {
     log_message(LOG_ERR, pamh, "Failed to retrieve authority from config");
     return NULL;
   }
-  if (params->request_debug) {
+  if (params && params->request_debug) {
     log_message(LOG_INFO, pamh, "debug: authority for AAD Auth is \"%s\"", authority);
   }
   return authority;
@@ -155,13 +155,13 @@ static const char *get_device_code(pam_handle_t *pamh, const Params *params,
   device_code = nss_http_token_request(device_url, device_postfield);
   if (!device_code || !*device_code) {
     log_message(LOG_ERR, pamh, "Failed to retrieve device code");
-    if (params->request_debug) {
+    if (params && params->request_debug) {
       log_message(LOG_INFO, pamh, "debug: device_url: \"%s\"", device_url);
       log_message(LOG_INFO, pamh, "debug: device_postfield: \"%s\"", device_postfield);
     }
     return NULL;
   }
-  if (params->request_debug) {
+  if (params && params->request_debug) {
     log_message(LOG_INFO, pamh, "debug: device code for AAD Auth is \"%s\"", device_code);
   }
   return device_code;
@@ -193,7 +193,7 @@ static int device_login(const char *username, pam_handle_t *pamh, const Params *
     return PAM_AUTH_ERR;
   }
   snprintf(pam_message, 512, "%s\nAnd press Enter to continue....", json_string_value(json_object_get(json_root, "message")));
-  if (params->debug) {
+  if (params && params->debug) {
     log_message(LOG_INFO, pamh, "debug: pam_message is \"%s\"", pam_message);
   }
   prompt_user(pamh, pam_message);
@@ -204,7 +204,7 @@ static int device_login(const char *username, pam_handle_t *pamh, const Params *
   snprintf(token_postfield, 512, "grant_type=urn:ietf:params:oauth:grant-type:device_code&client_id=%s&device_code=%s", client_id, json_string_value(json_object_get(json_root, "device_code")));
   json_decref(json_root);
 
-  if (params->request_debug) {
+  if (params && params->request_debug) {
     log_message(LOG_INFO, pamh, "debug: token_url: \"%s\"", token_url);
     log_message(LOG_INFO, pamh, "debug: token_postfield: \"%s\"", token_postfield);
   }
@@ -250,7 +250,7 @@ static int device_login(const char *username, pam_handle_t *pamh, const Params *
   json_decref(json_root);
 
   // all is good; allow user to continue
-  if (params->debug) {
+  if (params && params->debug) {
     log_message(LOG_INFO, pamh, "debug: Successful auth for \"%s\"", username);
   }
   return PAM_SUCCESS;
