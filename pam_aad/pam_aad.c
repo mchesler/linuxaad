@@ -5,6 +5,7 @@
 #include <security/pam_appl.h>
 #include <security/pam_ext.h>
 #include <syslog.h>
+#include <stdarg.h>
 
 #define MODULE_NAME "pam_aad"
 
@@ -204,7 +205,7 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
   snprintf(device_postfield, 512, "client_id=%s&scope=user.read%%20openid%%20profile", client_id);
 
   // create device login request
-  char *device_code = get_device_code(pamh, &params, device_url, device_postfield);
+  const char *device_code = get_device_code(pamh, &params, device_url, device_postfield);
 
   // print device code message
   json_root = json_loads(device_code, 0, &json_error);
