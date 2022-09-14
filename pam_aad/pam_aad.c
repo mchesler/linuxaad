@@ -4,6 +4,7 @@
 #include <security/pam_modules.h>
 #include <security/pam_appl.h>
 #include <security/pam_ext.h>
+#include <syslog.h>
 
 #define MODULE_NAME "pam_aad"
 
@@ -189,7 +190,7 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
 
   // Handle optional arguments that configure the PAM module
   Params params = { 0 };
-  if (parse_args(pamh, argc, argv &params) < 0) {
+  if (parse_args(pamh, argc, argv, &params) < 0) {
     return PAM_AUTH_ERR;
   }
 
@@ -215,7 +216,7 @@ static int device_login(pam_handle_t *pamh, int argc, const char **argv)
   if (params->debug) {
     log_message(LOG_INFO, pamh, "debug: pam_message is \"%s\"", pam_message);
   }
-  pam_password = request_pass(pamh, params, pam_message)
+  pam_password = request_pass(pamh, params, pam_message);
 
   // create poll request for token
   snprintf(token_url, 512, "%s/oauth2/v2.0/token", authority);
