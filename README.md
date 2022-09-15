@@ -79,9 +79,13 @@ Debian packages can be built and used for installation/configuration.
 ```
 sudo apt-get update
 sudo apt-get install build-essential devscripts debhelper
-cd pam_aad
-debbuild -uc
-sudo dpkg -i ../pam-aad_<VERSION>_amd64.deb
+pushd libnss_aad
+debuild -uc
+popd
+pushd pam_aad
+debuild -uc
+popd
+sudo dpkg -i ./libnss-aad_<VERSION>_amd64.dev ./pam-aad_<VERSION>_amd64.deb
 ```
 
 ## build on work from others

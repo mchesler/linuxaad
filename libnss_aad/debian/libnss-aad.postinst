@@ -1,0 +1,28 @@
+#!/bin/sh
+set -e
+
+if [ -e /etc/azuread/parameters.json ]; then
+  echo "Ensuring correct permissions for /etc/azuread/parameters.json"
+  # chmod 644 /etc/azuread/parameters.json
+else
+  echo "/etc/azuread/parameters.json not found. Create from the example at /etc/azuread/parameters.json.example"
+fi
+
+NSSWITCH_FILE="/etc/nsswitch.conf"
+SERVICES="passwd group shadow gshadow"
+
+echo "Ensuring NSS AAD config for ${SERVICES} services in ${NSSWITCH_FILE}"
+for SVC in $SERVICES;do
+  if grep -q ${SVC} ${NSSWITCH_FILE}; then
+    if grep "^${SVC}" ${NSSWITCH_FILE} | grep -q aad; then
+      echo "  ${SVC} already configured for AAD"
+    else
+      echo "  Configuring ${SVC} for AAD"
+      sed -i "/^${SVC}/s/$/ aad/" ${NSSWITCH_FILE}
+    fi
+  else
+    echo "  NOTE: ${SVC} service not found"
+  fi
+done
+
+#DEBHELPER#
