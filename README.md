@@ -80,10 +80,10 @@ Debian packages can be built and used for installation/configuration.
 sudo apt-get update
 sudo apt-get install build-essential devscripts debhelper
 pushd libnss_aad
-debbuild -uc
+debuild -uc
 popd
 pushd pam_aad
-debbuild -uc
+debuild -uc
 popd
 sudo dpkg -i ./libnss-aad_<VERSION>_amd64.dev ./pam-aad_<VERSION>_amd64.deb
 ```
