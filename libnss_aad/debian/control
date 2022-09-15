@@ -1,0 +1,18 @@
+Source: libnss-aad
+Maintainer: Matt Chesler <matt@chesler.org>
+Section: admin
+Priority: optional
+Standards-Version: 4.5.1
+Build-Depends:
+ debhelper (>=9), libtool,
+ libcurl4-openssl-dev, libjansson-dev
+Vcs-Git: https://github.com/mchesler/linuxaad.git
+Vcs-Browser: https://github.com/mchesler/linuxaad
+Homepage: https://github.com/mchesler/linuxaad
+
+Package: libnss-aad
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libpam-runtime (>= 1.0.1-6)
+Description: Azure Active Directory NSS Module
+ Name Service Switch (NSS) Module for performing user/group lookups against
+ Azure Active Directory (AAD).

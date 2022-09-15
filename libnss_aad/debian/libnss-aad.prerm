@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+
+echo "NOTE: Not removing config from /etc/azuread"
+
+NSSWITCH_FILE="/etc/nsswitch.conf"
+SERVICES="passwd group shadow gshadow"
+
+echo "Removing NSS AAD config for ${SERVICES} services in ${NSSWITCH_FILE}"
+for SVC in $SERVICES;do
+  if grep -q ${SVC} ${NSSWITCH_FILE}; then
+    if grep ${SVC} ${NSSWITCH_FILE} | grep -q aad; then
+      echo "  Removing AAD for ${SVC}"
+      sed -i "/^${SVC}/s/ aad//" ${NSSWITCH_FILE}
+    else
+      echo "  AAD not configured for ${SVC}"
+    fi
+  else
+    echo "  NOTE: ${SVC} service not found"
+  fi
+done
+
+#DEBHELPER#
