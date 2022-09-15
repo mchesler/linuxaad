@@ -3,7 +3,7 @@ pam-aad (1.0.2) UNRELEASED; urgency=medium
   * Require libnss-aad (>= 1.0.0)
   * Delegate control of /etc/azuread/parameters.json to libnss-aad
 
- -- Matt Chesler <matt@chesler.org>  Thu, 15 Sep 2022 20:47_59 +0000
+ -- Matt Chesler <matt@chesler.org>  Thu, 15 Sep 2022 20:47:59 +0000
 
 pam-aad (1.0.1) UNRELEASED; urgency=medium
 
