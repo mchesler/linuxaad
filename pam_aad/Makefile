@@ -29,6 +29,12 @@ pam_aad: pam_aad_build_dir
 clean:
 	rm -rf $(BUILD)
 
+pkgclean:
+	rm -rf debian/.debhelper debian/debhelper-build-stamp
+	rm -rf debian/files debian/pam-aad debian/pam-aad.substvars
+	rm -rf ../pam-aad_*.build ../pam-aad_*.buildinfo ../pam-aad_*.changes
+	rm -rf ../pam-aad*.deb ../pam-aad_*.dsc ../pam-aad_*.tar.xz
+
 install:
 	[ -d $(DESTDIR)/$(LIBDIR) ] || install -d $(DESTDIR)/$(LIBDIR)
 	install $(BUILD)/$(LIBRARY) $(DESTDIR)/$(LIBDIR)
