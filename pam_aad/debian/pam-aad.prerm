@@ -4,6 +4,4 @@ set -e
 echo "Disabling PAM Azure AD Authentication"
 /usr/sbin/pam-auth-update --remove aad
 
-echo "NOTE: Not removing config from /etc/azuread"
-
 #DEBHELPER#

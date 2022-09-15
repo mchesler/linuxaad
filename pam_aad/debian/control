@@ -12,6 +12,8 @@ Homepage: https://github.com/mchesler/linuxaad
 
 Package: pam-aad
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libpam-runtime (>= 1.0.1-6)
+Depends:
+ ${shlibs:Depends}, ${misc:Depends}, libpam-runtime (>= 1.0.1-6),
+ libnss-aad (>= 1.0.0)
 Description: Azure Active Directory PAM Module
  This PAM module provides Azure Active Directory authentication for Linux.

@@ -1,2 +1,1 @@
-../parameters.json.example etc/azuread
 debian/pam-configs/aad usr/share/pam-configs
