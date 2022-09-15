@@ -60,30 +60,6 @@ static void log_message(int priority, pam_handle_t *pamh,
   }
 }
 
-static int prompt_user(pam_handle_t *pamh, const char *prompt) {
-  struct pam_conv *conv;
-  const struct pam_message msg = { .msg_style = PAM_PROMPT_ECHO_OFF,
-                                   .msg       = prompt};
-  const struct pam_message *msgs = &msg;
-  struct pam_response *resp = NULL;
-  int retval;
-
-  retval = pam_get_item(pamh, PAM_CONV, (void *)&conv);
-  if (retval != PAM_SUCCESS) {
-    return retval;
-  }
-
-  retval = conv->conv(1, &msgs, &resp, conv->appdata_ptr);
-  if (resp != NULL) {
-    if (retval == PAM_SUCCESS && resp && resp->resp) {
-      free(resp->resp);
-    }
-    free(resp);
-  }
-
-  return retval;
-}
-
 static int parse_args(pam_handle_t *pamh, int argc, const char **argv,
                       Params *params) {
   params->debug = 0;
@@ -196,8 +172,7 @@ static int device_login(const char *username, pam_handle_t *pamh, const Params *
   if (params && params->debug) {
     log_message(LOG_INFO, pamh, "debug: pam_message is \"%s\"", pam_message);
   }
-  prompt_user(pamh, pam_message);
-
+  pam_prompt(pamh, PAM_PROMPT_ECHO_OFF, NULL, "%s", pam_message);
 
   // create poll request for token
   snprintf(token_url, 512, "%s/oauth2/v2.0/token", authority);
