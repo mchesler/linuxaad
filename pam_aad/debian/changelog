@@ -1,3 +1,9 @@
+pam-aad (1.0.1) UNRELEASED; urgency=medium
+
+  * Update package scripts to configure PAM
+
+ -- Matt Chesler <matt@chesler.org>  Thu, 15 Sep 2022 19:53:23 +0000
+
 pam-aad (1.0.0) UNRELEASED; urgency=medium
 
   * Initial release.
