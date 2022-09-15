@@ -1,0 +1,5 @@
+pam-aad (1.0.0) UNRELEASED; urgency=medium
+
+  * Initial release.
+
+ -- Matt Chesler <matt@chesler.org>  Thu, 15 Sep 2022 18:01:38 +0000
