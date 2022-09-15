@@ -1,0 +1,9 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: pam_aad
+Upstream-Contact: Matt Chesler <matt@chesler.org>
+Source: https://github.com/mchesler/linuxaad
+
+Files: *
+Copyright: 2022 Matt Chesler <matt@chesler.org>
+License: BSD-3-clause
+  [LICENSE TEXT]

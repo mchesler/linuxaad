@@ -1,0 +1,17 @@
+#!/bin/sh
+set -e
+
+if [ -e /etc/azuread/parameters.json ]; then
+  echo "Ensuring correct permissions for /etc/azuread/parameters.json"
+  chmod 644 /etc/azuread/parameters.json
+else
+  echo "/etc/azuread/parameters.json not found. Create from the example at /etc/azuread/parameters.json.example"
+fi
+
+echo "Enabling PAM Azure AD Authentication"
+/usr/sbin/pam-auth-update --enable aad
+
+echo "Consider enabling mkhomedir if not already by running:"
+echo "/usr/sbin/pam-auth-update --enable mkhomedir"
+
+#DEBHELPER#

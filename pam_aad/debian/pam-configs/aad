@@ -1,0 +1,9 @@
+Name: AAD authentication
+Default: yes
+Priority: 512
+Auth-Type: Primary
+Auth:
+	[success=end ignore=ignore default=die]  pam_aad.so
+Account-Type: Primary
+Account:
+	[success=end ignore=ignore default=die]  pam_aad.so
